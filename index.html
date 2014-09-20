@@ -154,13 +154,13 @@ aside {
 
 <div id="charts">
   <div id="hour-chart" class="chart">
-    <div class="title">Temps du jour</div>
+    <div class="title">Heure effectuée</div>
   </div>
   <div id="qty-chart" class="chart">
     <div class="title">Quantité (min.)</div>
   </div>
   <div id="distance-chart" class="chart">
-    <div class="title">Distance (mi.)</div>
+    <div class="title">Distance (Km)</div>
   </div>
   <div id="date-chart" class="chart">
     <div class="title">Date</div>
@@ -207,7 +207,7 @@ d3.csv("DataMarche.json", function(error, trans) {
       dates = date.group(d3.time.day),
       hour = tran.dimension(function(d) { return d.date.getHours() + d.date.getMinutes() / 60; }),
       hours = hour.group(Math.floor),
-      qty = tran.dimension(function(d) { return Math.max(-60, Math.min(149, d.qty)); }),
+      qty = tran.dimension(function(d) { return Math.max(1000, d.qty); }),
       qtys = qty.group(function(d) { return Math.floor(d / 10) * 10; }),
       distance = tran.dimension(function(d) { return Math.min(1999, d.distance); }),
       distances = distance.group(function(d) { return Math.floor(d / 50) * 50; });
@@ -225,7 +225,7 @@ d3.csv("DataMarche.json", function(error, trans) {
         .dimension(qty)
         .group(qtys)
       .x(d3.scale.linear()
-        .domain([-60, 150])
+        .domain([1000, 200000])
         .rangeRound([0, 10 * 21])),
 
     barChart()
