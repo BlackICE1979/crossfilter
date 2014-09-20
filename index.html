@@ -207,7 +207,7 @@ d3.csv("DataMarche.json", function(error, trans) {
       dates = date.group(d3.time.day),
       hour = tran.dimension(function(d) { return d.date.getHours() + d.date.getMinutes() / 60; }),
       hours = hour.group(Math.floor),
-      qty = tran.dimension(function(d) { return Math.max(1000, d.qty); }),
+      qty = tran.dimension(function(d) { return Math.max(0, Math.min(200, d.delay)); }),
       qtys = qty.group(function(d) { return Math.floor(d / 10) * 10; }),
       distance = tran.dimension(function(d) { return Math.min(1999, d.distance); }),
       distances = distance.group(function(d) { return Math.floor(d / 50) * 50; });
