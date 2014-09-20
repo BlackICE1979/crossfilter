@@ -151,7 +151,7 @@ aside {
 </style>
 
 <div id="body">
-Moyenne Test 1
+Moyenne Test 2
 <div id="charts">
   <div id="hour-chart" class="chart">
     <div class="title">Transaction effectuée à (Heure)</div>
@@ -179,9 +179,9 @@ Moyenne Test 1
 
 <aside id="totals"><span id="active">-</span> de <span id="total">-</span> transactions choisies.</aside>
 
-<div id="lists">
+<!--<div id="lists">
   <div id="tran-list" class="list"></div>
-</div>
+</div>-->
 
 </div>
 
@@ -360,54 +360,6 @@ d3.csv("DataMarche.json", function(error, trans) {
     charts[i].filter(null);
     renderAll();
   };
-
-  function tranList(div) {
-    var transByDate = nestByDate.entries(date.top(40));
-
-    div.each(function() {
-      var date = d3.select(this).selectAll(".date")
-          .data(transByDate, function(d) { return d.key; });
-
-      date.enter().append("div")
-          .attr("class", "date")
-        .append("div")
-          .attr("class", "day")
-          .text(function(d) { return formatDate(d.values[0].date); });
-
-      date.exit().remove();
-
-      var tran = date.order().selectAll(".tran")
-          .data(function(d) { return d.values; }, function(d) { return d.index; });
-
-      var tranEnter = tran.enter().append("div")
-          .attr("class", "tran");
-
-      tranEnter.append("div")
-          .attr("class", "time")
-          .text(function(d) { return formatTime(d.date); });
-
-      tranEnter.append("div")
-          .attr("class", "origin")
-          .text(function(d) { return d.origin; });
-
-      tranEnter.append("div")
-          .attr("class", "destination")
-          .text(function(d) { return d.destination; });
-
-      tranEnter.append("div")
-          .attr("class", "distance")
-          .text(function(d) { return formatNumber(d.distance) + " Km"; });
-
-      tranEnter.append("div")
-          .attr("class", "qty")
-          .classed("early", function(d) { return d.qty < 0; })
-          .text(function(d) { return formatChange(d.qty) + " min."; });
-
-      tran.exit().remove();
-
-      tran.order();
-    });
-  }
 
   function barChart() {
     if (!barChart.id) barChart.id = 0;
