@@ -225,7 +225,7 @@ d3.csv("DataMarche.json", function(error, trans) {
         .dimension(qty)
         .group(qtys)
       .x(d3.scale.linear()
-        .domain([1000, 200000])
+        .domain([0, 200])
         .rangeRound([0, 10 * 21])),
 
     barChart()
