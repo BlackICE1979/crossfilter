@@ -93,7 +93,7 @@ h1, h2 {
   width: 260px;
 }
 
-#delay-chart {
+#qty-chart {
   width: 230px;
 }
 
@@ -105,39 +105,39 @@ h1, h2 {
   width: 920px;
 }
 
-#flight-list {
+#tran-list {
   min-height: 1024px;
 }
 
-#flight-list .date,
-#flight-list .day {
+#tran-list .date,
+#tran-list .day {
   margin-bottom: .4em;
 }
 
-#flight-list .flight {
+#tran-list .tran {
   line-height: 1.5em;
   background: #eee;
   width: 640px;
   margin-bottom: 1px;
 }
 
-#flight-list .time {
+#tran-list .time {
   color: #999;
 }
 
-#flight-list .flight div {
+#tran-list .tran div {
   display: inline-block;
   width: 100px;
 }
 
-#flight-list div.distance,
-#flight-list div.delay {
+#tran-list div.distance,
+#tran-list div.qty {
   width: 160px;
   padding-right: 10px;
   text-align: right;
 }
 
-#flight-list .early {
+#tran-list .early {
   color: green;
 }
 
@@ -154,10 +154,10 @@ aside {
 
 <div id="charts">
   <div id="hour-chart" class="chart">
-    <div class="title">Time of Day</div>
+    <div class="title">Temps du jour</div>
   </div>
-  <div id="delay-chart" class="chart">
-    <div class="title">Arrival Delay (min.)</div>
+  <div id="qty-chart" class="chart">
+    <div class="title">Quantité (min.)</div>
   </div>
   <div id="distance-chart" class="chart">
     <div class="title">Distance (mi.)</div>
@@ -167,22 +167,20 @@ aside {
   </div>
 </div>
 
-<aside id="totals"><span id="active">-</span> de <span id="total">-</span> Transactions choisies.</aside>
+<aside id="totals"><span id="active">-</span> de <span id="total">-</span> transactions choisies.</aside>
 
 <div id="lists">
-  <div id="flight-list" class="list"></div>
+  <div id="tran-list" class="list"></div>
 </div>
 
 </div>
-
-<a href="https://github.com/square/crossfilter"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 
 <script src="crossfilter.v1.min.js"></script>
 <script src="d3.v3.min.js"></script>
 <script>
 
 // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
-d3.csv("flights-3m.json", function(error, flights) {
+d3.csv("DataMarche.json", function(error, trans) {
 
   // Various formatters.
   var formatNumber = d3.format(",d"),
@@ -190,28 +188,28 @@ d3.csv("flights-3m.json", function(error, flights) {
       formatDate = d3.time.format("%B %d, %Y"),
       formatTime = d3.time.format("%I:%M %p");
 
-  // A nest operator, for grouping the flight list.
+  // A nest operator, for grouping the tran list.
   var nestByDate = d3.nest()
       .key(function(d) { return d3.time.day(d.date); });
 
   // A little coercion, since the CSV is untyped.
-  flights.forEach(function(d, i) {
+  trans.forEach(function(d, i) {
     d.index = i;
     d.date = parseDate(d.date);
-    d.delay = +d.delay;
+    d.qty = +d.qty;
     d.distance = +d.distance;
   });
 
   // Create the crossfilter for the relevant dimensions and groups.
-  var flight = crossfilter(flights),
-      all = flight.groupAll(),
-      date = flight.dimension(function(d) { return d.date; }),
+  var tran = crossfilter(trans),
+      all = tran.groupAll(),
+      date = tran.dimension(function(d) { return d.date; }),
       dates = date.group(d3.time.day),
-      hour = flight.dimension(function(d) { return d.date.getHours() + d.date.getMinutes() / 60; }),
+      hour = tran.dimension(function(d) { return d.date.getHours() + d.date.getMinutes() / 60; }),
       hours = hour.group(Math.floor),
-      delay = flight.dimension(function(d) { return Math.max(-60, Math.min(149, d.delay)); }),
-      delays = delay.group(function(d) { return Math.floor(d / 10) * 10; }),
-      distance = flight.dimension(function(d) { return Math.min(1999, d.distance); }),
+      qty = tran.dimension(function(d) { return Math.max(-60, Math.min(149, d.qty)); }),
+      qtys = qty.group(function(d) { return Math.floor(d / 10) * 10; }),
+      distance = tran.dimension(function(d) { return Math.min(1999, d.distance); }),
       distances = distance.group(function(d) { return Math.floor(d / 50) * 50; });
 
   var charts = [
@@ -224,8 +222,8 @@ d3.csv("flights-3m.json", function(error, flights) {
         .rangeRound([0, 10 * 24])),
 
     barChart()
-        .dimension(delay)
-        .group(delays)
+        .dimension(qty)
+        .group(qtys)
       .x(d3.scale.linear()
         .domain([-60, 150])
         .rangeRound([0, 10 * 21])),
@@ -257,11 +255,11 @@ d3.csv("flights-3m.json", function(error, flights) {
 
   // Render the initial lists.
   var list = d3.selectAll(".list")
-      .data([flightList]);
+      .data([tranList]);
 
   // Render the total.
   d3.selectAll("#total")
-      .text(formatNumber(flight.size()));
+      .text(formatNumber(tran.size()));
 
   renderAll();
 
@@ -296,12 +294,12 @@ d3.csv("flights-3m.json", function(error, flights) {
     renderAll();
   };
 
-  function flightList(div) {
-    var flightsByDate = nestByDate.entries(date.top(40));
+  function tranList(div) {
+    var transByDate = nestByDate.entries(date.top(40));
 
     div.each(function() {
       var date = d3.select(this).selectAll(".date")
-          .data(flightsByDate, function(d) { return d.key; });
+          .data(transByDate, function(d) { return d.key; });
 
       date.enter().append("div")
           .attr("class", "date")
@@ -311,36 +309,36 @@ d3.csv("flights-3m.json", function(error, flights) {
 
       date.exit().remove();
 
-      var flight = date.order().selectAll(".flight")
+      var tran = date.order().selectAll(".tran")
           .data(function(d) { return d.values; }, function(d) { return d.index; });
 
-      var flightEnter = flight.enter().append("div")
-          .attr("class", "flight");
+      var tranEnter = tran.enter().append("div")
+          .attr("class", "tran");
 
-      flightEnter.append("div")
+      tranEnter.append("div")
           .attr("class", "time")
           .text(function(d) { return formatTime(d.date); });
 
-      flightEnter.append("div")
+      tranEnter.append("div")
           .attr("class", "origin")
           .text(function(d) { return d.origin; });
 
-      flightEnter.append("div")
+      tranEnter.append("div")
           .attr("class", "destination")
           .text(function(d) { return d.destination; });
 
-      flightEnter.append("div")
+      tranEnter.append("div")
           .attr("class", "distance")
           .text(function(d) { return formatNumber(d.distance) + " mi."; });
 
-      flightEnter.append("div")
-          .attr("class", "delay")
-          .classed("early", function(d) { return d.delay < 0; })
-          .text(function(d) { return formatChange(d.delay) + " min."; });
+      tranEnter.append("div")
+          .attr("class", "qty")
+          .classed("early", function(d) { return d.qty < 0; })
+          .text(function(d) { return formatChange(d.qty) + " min."; });
 
-      flight.exit().remove();
+      tran.exit().remove();
 
-      flight.order();
+      tran.order();
     });
   }
 
